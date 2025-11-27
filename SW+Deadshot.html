@@ -1,0 +1,160 @@
+//FILE MADE BY SW+//
+//PLAY AT https://sites.google.com/view/info-sw-international-payments/home//
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>deadshot.io — Full page</title>
+  <style>
+    :root { background: #000; color: #fff; }
+    html,body { height:100%; margin:0; padding:0; background:#000; }
+    .frame-wrap {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .toolbar {
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      padding:8px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+      z-index: 40;
+      backdrop-filter: blur(4px);
+    }
+
+    .toolbar button, .toolbar a {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #fff;
+      padding:6px 10px;
+      border-radius:6px;
+      text-decoration:none;
+      font: 13px/1 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      cursor: pointer;
+    }
+    .toolbar button:hover, .toolbar a:hover { background: rgba(255,255,255,0.12); }
+
+    .iframe-container {
+      position: absolute;
+      top: 44px; /* leave room for toolbar */
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    iframe {
+      width:100%;
+      height:100%;
+      border:0;
+      display:block;
+      background: #000;
+    }
+
+    .fallback {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:8px;
+      color:#ddd;
+      padding:24px;
+    }
+
+    @media (max-width:480px) {
+      .toolbar { padding:6px; }
+      .toolbar button, .toolbar a { padding:6px 8px; font-size:12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame-wrap" id="frameWrap">
+    <div class="toolbar" role="toolbar" aria-label="controls">
+      <a id="openNew" href="https://deadshot.io" target="_blank" rel="noopener noreferrer">Open in new tab</a>
+      <button id="goFull">Enter fullscreen</button>
+      <button id="reload">Reload</button>
+    </div>
+
+    <div class="iframe-container" id="container">
+      <iframe id="gameFrame"
+              src="https://deadshot.io"
+              title="deadshot.io"
+              allow="fullscreen; autoplay; encrypted-media; clipboard-write; gamepad;"
+              sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"
+              loading="eager"></iframe>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const frame = document.getElementById('gameFrame');
+      const openNew = document.getElementById('openNew');
+      const goFull = document.getElementById('goFull');
+      const reload = document.getElementById('reload');
+      const container = document.getElementById('container');
+
+      // Fullscreen handler with fallback
+      goFull.addEventListener('click', async () => {
+        try {
+          if (container.requestFullscreen) {
+            await container.requestFullscreen();
+          } else if (container.webkitRequestFullscreen) {
+            container.webkitRequestFullscreen();
+          } else {
+            // fallback to document full screen
+            await document.documentElement.requestFullscreen();
+          }
+        } catch (e) {
+          console.warn('Fullscreen request failed:', e);
+          alert('Fullscreen not available. Try "Open in new tab" then use the browser fullscreen.');
+        }
+      });
+
+      // Reload iframe safely
+      reload.addEventListener('click', () => {
+        frame.src = frame.src;
+      });
+
+      // Detect if iframe blocked from embedding and show fallback message
+      function checkIframeBlocked() {
+        // Try accessing a property — cross-origin will throw, but when blocked by X-Frame-Options,
+        // some browsers set 'about:blank' or fail to load. Use load/error events as best-effort.
+      }
+
+      // Add a short timeout for load failure (best-effort; can't detect X-Frame-Options reliably cross-origin)
+      let loaded = false;
+      frame.addEventListener('load', () => { loaded = true; });
+
+      setTimeout(() => {
+        if (!loaded) {
+          // Replace iframe with helpful fallback UI
+          container.innerHTML = `
+            <div class="fallback">
+              <h2>Unable to embed deadshot.io</h2>
+              <p>The site may prevent embedding. You can open it directly in a new tab.</p>
+              <div>
+                <a href="https://deadshot.io" target="_blank" rel="noopener noreferrer">Open deadshot.io</a>
+              </div>
+            </div>
+          `;
+        }
+      }, 2000);
+
+      // keyboard shortcut: F for fullscreen, R to reload
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'f' || e.key === 'F') goFull.click();
+        if (e.key === 'r' || e.key === 'R') reload.click();
+      });
+    })();
+  </script>
+</body>
+</html>
